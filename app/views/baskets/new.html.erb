@@ -4,7 +4,7 @@
 
 <%= form_tag("/baskets", method: "post") do %>
 <div class = "well">
-  <%= text_field_tag(:num, "", placeholder: "# of emails to process (starts with most recent)", class: "form-control") %></br>
+  <%= text_field_tag(:date, "", placeholder: "Enter the earliest date you want to search to in this format (2016-01-01)", class: "form-control") %></br>
 
   <%= submit_tag("Submit", class: "btn btn-primary") %>
 </div>
