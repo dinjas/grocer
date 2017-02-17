@@ -16,7 +16,8 @@ class ProductsController < ApplicationController
   def show
     if !@user.products.include?(@product)
       redirect_to products_path,
-      flash: { alert: 'You can only view products you have purchased' }
+      flash: { alert: I18n.t('products.must_own') }
+
     end
     respond_to do |format|
       format.js
