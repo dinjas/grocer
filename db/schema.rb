@@ -31,7 +31,6 @@ ActiveRecord::Schema.define(version: 20170204230031) do
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
     t.decimal  "weight"
-    t.integer  "total"
     t.integer  "total_cents"
   end
 
