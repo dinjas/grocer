@@ -7,6 +7,33 @@ class Product < ApplicationRecord
   validates :nickname, uniqueness: true
   paginates_per 10
 
+  def self.most_expensive_product
+    LineItem.order(:price_cents).last.product
+  end
+
+  def self.most_expensive_product_by_user(user)
+    LineItem.where(basket: Basket.where(user: user))
+      .order(price_cents: :desc).first.product
+  end
+
+  def self.least_expensive_product
+    LineItem.order(:price_cents).first.product
+  end
+
+  def self.least_expensive_product_by_user(user)
+    LineItem.where(basket: Basket.where(user: user))
+      .order(:price_cents).first.product
+  end
+
+  def self.most_popular_product
+    joins(:line_items).group('products.id').order('SUM(quantity)').last
+  end
+
+  def self.stable_price
+    x = all.select { |p| p.line_items.collect { |l| l.price }.uniq.count > 1 }
+    x.each { |p| puts p.name }
+  end
+
   def self.custom_sort(category, direction)
     case category
     when 'times_bought'
@@ -76,33 +103,6 @@ class Product < ApplicationRecord
   def lowest_price_by_user(user)
     line_items.where(basket: Basket.where(user: user))
               .order(:price_cents).first.price
-  end
-
-  def self.most_expensive_product
-    LineItem.order(:price_cents).last.product
-  end
-
-  def self.most_expensive_product_by_user(user)
-    LineItem.where(basket: Basket.where(user: user))
-            .order(price_cents: :desc).first.product
-  end
-
-  def self.least_expensive_product
-    LineItem.order(:price_cents).first.product
-  end
-
-  def self.least_expensive_product_by_user(user)
-    LineItem.where(basket: Basket.where(user: user))
-            .order(:price_cents).first.product
-  end
-
-  def self.most_popular_product
-    joins(:line_items).group('products.id').order('SUM(quantity)').last
-  end
-
-  def self.stable_price
-    x = all.select { |p| p.line_items.collect { |l| l.price }.uniq.count > 1 }
-    x.each { |p| puts p.name }
   end
 
   def most_recently_purchased(user)
