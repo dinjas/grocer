@@ -21,12 +21,17 @@ class Basket < ApplicationRecord
     end
   end
 
-  def self.grab_emails(user, date)
-    gmail = Gmail.connect(:xoauth2, user.email, user.oauth_token)
-    gmail.inbox.emails(
-      from: 'receipts@newseasonsmarket.com',
-      after: Date.parse(date)
-    )
+  def self.custom_sort(category, direction)
+    case category
+      when 'date'
+        sort_date(direction)
+      when 'items'
+        sort_items(direction)
+      when 'total'
+        sort_total(direction)
+      else
+        sort_date('desc')
+    end
   end
 
   def self.get_the_right_rows(email)
@@ -67,32 +72,17 @@ class Basket < ApplicationRecord
     end
   end
 
-  def build_products_and_line_items(info)
-    unless info.nil?
-      product = Product.find_or_create_by(name: info[:name].titleize,
-                                          nickname: info[:name].titleize)
-      line_items.build(
-        user: user,
-        product: product,
-        price_cents: info[:price_cents],
-        quantity: info[:quantity],
-        weight: info[:weight],
-        total_cents: info[:total_cents]
-      )
-    end
+  def self.grab_emails(user, date)
+    gmail = Gmail.connect(:xoauth2, user.email, user.oauth_token)
+    gmail.inbox.emails(
+      from: 'receipts@newseasonsmarket.com',
+      after: Date.parse(date)
+    )
   end
 
-  def self.custom_sort(category, direction)
-    case category
-    when 'date'
-      sort_date(direction)
-    when 'items'
-      sort_items(direction)
-    when 'total'
-      sort_total(direction)
-    else
-      sort_date('desc')
-    end
+  def self.monthly_spending
+    group_by_month(:date, last: 12, current: false)
+      .sum('baskets.total_cents / 100')
   end
 
   def self.sort_date(direction)
@@ -114,16 +104,26 @@ class Basket < ApplicationRecord
       .order("SUM(line_items.total_cents) #{direction}")
   end
 
-  def total
-    Money.new(line_items.total_spent)
+  def build_products_and_line_items(info)
+    unless info.nil?
+      product = Product.find_or_create_by(name: info[:name].titleize,
+                                          nickname: info[:name].titleize)
+      line_items.build(
+        user: user,
+        product: product,
+        price_cents: info[:price_cents],
+        quantity: info[:quantity],
+        weight: info[:weight],
+        total_cents: info[:total_cents]
+      )
+    end
   end
 
   def quantity
     line_items.sum('quantity')
   end
 
-  def self.monthly_spending
-    group_by_month(:date, last: 12, current: false)
-    .sum('baskets.total_cents / 100')
+  def total
+    Money.new(line_items.total_spent)
   end
 end
