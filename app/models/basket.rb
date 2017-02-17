@@ -122,7 +122,7 @@ class Basket < ApplicationRecord
     line_items.sum('quantity')
   end
 
-  def self.monthly_spendingg
+  def self.monthly_spending
     group_by_month(:date, last: 12, current: false)
     .sum('baskets.total_cents / 100')
   end
