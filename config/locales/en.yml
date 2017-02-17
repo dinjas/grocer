@@ -21,3 +21,5 @@
 
 en:
   hello: "Hello world"
+  products:
+    must_own: 'You can only view products you have purchased'
